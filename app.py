@@ -4,15 +4,9 @@ import cv2
 from tensorflow.keras.models import load_model
 from mtcnn import MTCNN
 import joblib
-import gdown
-
-# Google Drive 파일 링크에서 파일 ID 추출
-file_id = 'your_file_id_here'
-destination = 'final_model.h5'
-gdown.download(f'https://drive.google.com/file/d/14D160ptJPcknHE75tLLZn3bc7-LjDQby/view?usp=drive_link={file_id}', destination, quiet=False)
 
 # 모델 및 scaler 로드
-model_path = 'final_model.h5'
+model_path = '/mount/src/soccer-position-recommendation/final_model.h5'
 model = load_model(model_path)
 scaler = joblib.load('scaler.pkl')
 
