@@ -1,5 +1,5 @@
 streamlit
-tensorflow-gpu==2.7.0
+tensorflow=2.7.0
 mtcnn
 joblib
 gdown
