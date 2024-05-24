@@ -57,36 +57,41 @@ def preprocess_new_data(image, height, weight):
     numeric_data = scaler.transform(numeric_data)  # 정규화 적용
 
     return face_img, numeric_data
+    
+def main():
+        # Streamlit 앱 인터페이스
+    st.title('Football Player Position Prediction')
 
-# Streamlit 앱 인터페이스
-st.title('Football Player Position Prediction')
+    uploaded_file = st.file_uploader("Upload an image of the player", type=["jpg", "jpeg", "png"])
+    height = st.number_input("Height (in cm)", min_value=100, max_value=250, value=180)
+    weight = st.number_input("Weight (in kg)", min_value=30, max_value=150, value=70)
 
-uploaded_file = st.file_uploader("Upload an image of the player", type=["jpg", "jpeg", "png"])
-height = st.number_input("Height (in cm)", min_value=100, max_value=250, value=180)
-weight = st.number_input("Weight (in kg)", min_value=30, max_value=150, value=70)
-
-if st.button('Predict Position'):
-    if uploaded_file is not None:
-        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    if st.button('Predict Position'):
+        if uploaded_file is not None:
+            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
         # 바이트 배열을 PIL 이미지로 변환
-        image_pil = Image.open(BytesIO(file_bytes))
+            image_pil = Image.open(BytesIO(file_bytes))
 
         # PIL 이미지를 NumPy 배열로 변환
-        image = np.array(image_pil)
+            image = np.array(image_pil)
 
-        face_img, numeric_data = preprocess_new_data(image, height, weight)
+            face_img, numeric_data = preprocess_new_data(image, height, weight)
 
-        predictions = model.predict([face_img, numeric_data])
-        predicted_position = np.argmax(predictions, axis=1)
+            predictions = model.predict([face_img, numeric_data])
+            predicted_position = np.argmax(predictions, axis=1)
 
-        predicted_position_name = position_mapping[predicted_position[0]]
-        st.write(f"Predicted position: {predicted_position_name}")
-        st.write(position_advice[predicted_position_name])
+            predicted_position_name = position_mapping[predicted_position[0]]
+            st.write(f"Predicted position: {predicted_position_name}")
+            st.write(position_advice[predicted_position_name])
 
         # 예측 확률 출력 (추가)
-        probabilities = predictions[0]
-        st.write("Prediction Probabilities:")
-        for i, prob in enumerate(probabilities):
-            st.write(f"{position_mapping[i]}: {prob * 100:.2f}%")
-    else:
-        st.warning("Please upload an image.")
+            probabilities = predictions[0]
+            st.write("Prediction Probabilities:")
+            for i, prob in enumerate(probabilities):
+                st.write(f"{position_mapping[i]}: {prob * 100:.2f}%")
+        else:
+            st.warning("Please upload an image.")
+
+
+if __name__ == "__main__":
+    main()
