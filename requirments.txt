@@ -1,6 +1,7 @@
 streamlit
 tensorflow
-opencv-python-headless
 mtcnn
 joblib
 gdown
+Pillow
+numpy
