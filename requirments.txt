@@ -5,3 +5,4 @@ joblib
 gdown
 Pillow
 numpy
+keras
