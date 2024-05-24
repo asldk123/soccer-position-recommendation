@@ -1,11 +1,13 @@
 import streamlit as st
 import numpy as np
+import cv2
 from tensorflow.keras.models import load_model
 from mtcnn import MTCNN
 import joblib
+pip install gdown
+
 import gdown
-from PIL import Image
-from io import BytesIO
+
 # Google Drive 파일 링크에서 파일 ID 추출
 file_id = 'your_file_id_here'
 destination = 'final_model.h5'
@@ -43,9 +45,7 @@ def preprocess_new_data(image, height, weight):
     if faces:
         x, y, w, h = faces[0]['box']
         face_img = image[y:y+h, x:x+w]
-        # 이미지 크기 조정
-        face_pil_img = Image.fromarray(face_img)  # NumPy 배열을 Pillow 이미지로 변환
-        face_pil_img = face_pil_img.resize((224, 224))  # 이미지 크기 조정
+        face_img = cv2.resize(face_img, (224, 224))  # ResNet50 입력 크기로 조정
         face_img = np.array(face_img) / 255.0  # 정규화
         face_img = np.expand_dims(face_img, axis=0)  # 배치 차원 추가
     else:
@@ -57,41 +57,32 @@ def preprocess_new_data(image, height, weight):
     numeric_data = scaler.transform(numeric_data)  # 정규화 적용
 
     return face_img, numeric_data
-    
-def main():
-        # Streamlit 앱 인터페이스
-    st.title('Football Player Position Prediction')
 
-    uploaded_file = st.file_uploader("Upload an image of the player", type=["jpg", "jpeg", "png"])
-    height = st.number_input("Height (in cm)", min_value=100, max_value=250, value=180)
-    weight = st.number_input("Weight (in kg)", min_value=30, max_value=150, value=70)
+# Streamlit 앱 인터페이스
+st.title('Football Player Position Prediction')
 
-    if st.button('Predict Position'):
-        if uploaded_file is not None:
-            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        # 바이트 배열을 PIL 이미지로 변환
-            image_pil = Image.open(BytesIO(file_bytes))
+uploaded_file = st.file_uploader("Upload an image of the player", type=["jpg", "jpeg", "png"])
+height = st.number_input("Height (in cm)", min_value=100, max_value=250, value=180)
+weight = st.number_input("Weight (in kg)", min_value=30, max_value=150, value=70)
 
-        # PIL 이미지를 NumPy 배열로 변환
-            image = np.array(image_pil)
+if st.button('Predict Position'):
+    if uploaded_file is not None:
+        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+        image = cv2.imdecode(file_bytes, 1)
 
-            face_img, numeric_data = preprocess_new_data(image, height, weight)
+        face_img, numeric_data = preprocess_new_data(image, height, weight)
 
-            predictions = model.predict([face_img, numeric_data])
-            predicted_position = np.argmax(predictions, axis=1)
+        predictions = model.predict([face_img, numeric_data])
+        predicted_position = np.argmax(predictions, axis=1)
 
-            predicted_position_name = position_mapping[predicted_position[0]]
-            st.write(f"Predicted position: {predicted_position_name}")
-            st.write(position_advice[predicted_position_name])
+        predicted_position_name = position_mapping[predicted_position[0]]
+        st.write(f"Predicted position: {predicted_position_name}")
+        st.write(position_advice[predicted_position_name])
 
         # 예측 확률 출력 (추가)
-            probabilities = predictions[0]
-            st.write("Prediction Probabilities:")
-            for i, prob in enumerate(probabilities):
-                st.write(f"{position_mapping[i]}: {prob * 100:.2f}%")
-        else:
-            st.warning("Please upload an image.")
-
-
-if __name__ == "__main__":
-    main()
+        probabilities = predictions[0]
+        st.write("Prediction Probabilities:")
+        for i, prob in enumerate(probabilities):
+            st.write(f"{position_mapping[i]}: {prob * 100:.2f}%")
+    else:
+        st.warning("Please upload an image.")
