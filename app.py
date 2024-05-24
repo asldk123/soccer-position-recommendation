@@ -1,11 +1,11 @@
 import streamlit as st
 import numpy as np
-import cv2
 from tensorflow.keras.models import load_model
 from mtcnn import MTCNN
 import joblib
 import gdown
-
+from PIL import Image
+from io import BytesIO
 # Google Drive 파일 링크에서 파일 ID 추출
 file_id = 'your_file_id_here'
 destination = 'final_model.h5'
@@ -43,7 +43,9 @@ def preprocess_new_data(image, height, weight):
     if faces:
         x, y, w, h = faces[0]['box']
         face_img = image[y:y+h, x:x+w]
-        face_img = cv2.resize(face_img, (224, 224))  # ResNet50 입력 크기로 조정
+        # 이미지 크기 조정
+        face_pil_img = Image.fromarray(face_img)  # NumPy 배열을 Pillow 이미지로 변환
+        face_pil_img = face_pil_img.resize((224, 224))  # 이미지 크기 조정
         face_img = np.array(face_img) / 255.0  # 정규화
         face_img = np.expand_dims(face_img, axis=0)  # 배치 차원 추가
     else:
@@ -66,7 +68,11 @@ weight = st.number_input("Weight (in kg)", min_value=30, max_value=150, value=70
 if st.button('Predict Position'):
     if uploaded_file is not None:
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        image = cv2.imdecode(file_bytes, 1)
+        # 바이트 배열을 PIL 이미지로 변환
+        image_pil = Image.open(BytesIO(file_bytes))
+
+        # PIL 이미지를 NumPy 배열로 변환
+        image = np.array(image_pil)
 
         face_img, numeric_data = preprocess_new_data(image, height, weight)
 
