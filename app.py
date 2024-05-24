@@ -4,7 +4,7 @@ import cv2
 from tensorflow.keras.models import load_model
 from mtcnn import MTCNN
 import joblib
-pip install gdown
+
 
 import gdown
 
