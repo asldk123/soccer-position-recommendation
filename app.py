@@ -4,8 +4,6 @@ import cv2
 from tensorflow.keras.models import load_model
 from mtcnn import MTCNN
 import joblib
-
-
 import gdown
 
 # Google Drive 파일 링크에서 파일 ID 추출
